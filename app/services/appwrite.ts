@@ -6,8 +6,15 @@ const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID || "";
 const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID || "";
 const ENDPOINT = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || "";
 const PROJECT_ID = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID || "";
+const FAVORITES_ID = process.env.EXPO_PUBLIC_APPWRITE_FAVORITES_ID || "";
 
-if (!DATABASE_ID || !COLLECTION_ID || !ENDPOINT || !PROJECT_ID) {
+if (
+  !DATABASE_ID ||
+  !COLLECTION_ID ||
+  !ENDPOINT ||
+  !PROJECT_ID ||
+  !FAVORITES_ID
+) {
   console.error("Missing Appwrite environment variables");
 }
 
@@ -64,5 +71,46 @@ export const getTrendingMovies = async (): Promise<
   } catch (error) {
     console.log(error);
     return undefined;
+  }
+};
+
+export const handleSaveFavorite = async (movie: Movie) => {
+  if (movie) {
+    try {
+      await database.createDocument(DATABASE_ID, FAVORITES_ID, ID.unique(), {
+        movie_id: movie.id,
+        title: movie.title,
+        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        vote_count: movie.vote_count,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+      });
+      alert("Movie saved to favorites!");
+    } catch (error) {
+      console.error("Error saving favorite:", error);
+      alert("Failed to save movie.");
+    }
+  }
+};
+
+// Function to fetch all favorite movies
+export const fetchFavorites = async (): Promise<Movie[]> => {
+  try {
+    const response = await database.listDocuments(DATABASE_ID, FAVORITES_ID);
+    return response.documents as Movie[];
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    return [];
+  }
+};
+
+// Function to remove a movie from the favorites collection
+export const handleRemoveFavorite = async (id: string) => {
+  try {
+    await database.deleteDocument(DATABASE_ID, FAVORITES_ID, id);
+    alert("Movie removed from favorites!");
+  } catch (error) {
+    console.error("Error removing favorite:", error);
+    alert("Failed to remove movie.");
   }
 };
