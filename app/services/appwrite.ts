@@ -82,7 +82,7 @@ export const handleSaveFavorite = async (movie: Movie) => {
         title: movie.title,
         poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
         vote_count: movie.vote_count,
-        vote_average: movie.vote_average,
+        vote_average: Math.round(movie.vote_average),
         release_date: movie.release_date,
       });
       alert("Movie saved to favorites!");
